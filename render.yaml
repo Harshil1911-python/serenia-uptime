@@ -8,7 +8,19 @@ services:
     envVars:
       - key: FLASK_ENV
         value: production
-      - key: SECRET_KEY
-        generateValue: true
       - key: PYTHON_VERSION
         value: "3.12.9"
+      - key: SECRET_KEY
+        generateValue: true
+      # --- Twilio SMS Alerts (fill these in Render dashboard) ---
+      - key: TWILIO_ACCOUNT_SID
+        value: ""
+      - key: TWILIO_AUTH_TOKEN
+        value: ""
+      - key: TWILIO_FROM_NUMBER
+        value: ""
+      # --- GitHub Dev Tracker ---
+      - key: GITHUB_REPO
+        value: ""
+      - key: GITHUB_TOKEN
+        value: ""

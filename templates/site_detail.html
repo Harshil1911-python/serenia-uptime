@@ -13,7 +13,7 @@
   </div>
 </div>
 
-<!-- Current status banner -->
+<!-- Status banner -->
 <div class="status-banner {{ site.current_status }}">
   <div class="sb-left">
     <span class="sb-dot"></span>
@@ -23,7 +23,28 @@
   <div class="sb-right">
     <span>{{ site.response_time | round(0) | int if site.response_time else '—' }} ms</span>
     <span>{{ site.uptime_percentage() }}% uptime</span>
-    <span>Last: {{ site.last_checked.strftime('%H:%M %d %b %Y') if site.last_checked else 'Never' }}</span>
+    <span>👁 {{ site.total_views or 0 }} views</span>
+    <span>🕐 {{ site.last_checked.strftime('%I:%M %p  %d %b %Y IST') if site.last_checked else 'Never' }}</span>
+  </div>
+</div>
+
+<!-- Metrics row -->
+<div class="detail-metrics">
+  <div class="dmetric-card">
+    <span class="dmetric-label">Total Views</span>
+    <span class="dmetric-value">{{ site.total_views or 0 }}</span>
+  </div>
+  <div class="dmetric-card">
+    <span class="dmetric-label">Uptime</span>
+    <span class="dmetric-value">{{ site.uptime_percentage() }}%</span>
+  </div>
+  <div class="dmetric-card">
+    <span class="dmetric-label">Consecutive Failures</span>
+    <span class="dmetric-value">{{ site.consecutive_failures() }}</span>
+  </div>
+  <div class="dmetric-card">
+    <span class="dmetric-label">Added On</span>
+    <span class="dmetric-value small-val">{{ site.created_at.strftime('%d %b %Y IST') if site.created_at else '—' }}</span>
   </div>
 </div>
 
@@ -31,14 +52,14 @@
 <div class="table-card">
   <div class="table-header">
     <h3>Check History</h3>
-    <span class="table-count">{{ history | length }} records</span>
+    <span class="table-count">{{ history | length }} records (showing latest 200)</span>
   </div>
   {% if history %}
   <div class="table-wrap">
     <table class="history-table">
       <thead>
         <tr>
-          <th>Timestamp</th>
+          <th>Timestamp (IST)</th>
           <th>Status</th>
           <th>Response Time</th>
           <th>Status Code</th>
@@ -47,9 +68,9 @@
       <tbody>
         {% for h in history %}
         <tr class="row-{{ h.status }}">
-          <td>{{ h.timestamp.strftime('%H:%M:%S  %d %b %Y') if h.timestamp else '—' }}</td>
+          <td>{{ h.timestamp.strftime('%I:%M:%S %p  %d %b %Y') if h.timestamp else '—' }}</td>
           <td><span class="status-badge {{ h.status }}">{{ h.status | upper }}</span></td>
-          <td>{{ h.response_time | round(0) | int if h.response_time else '—' }} {% if h.response_time %}ms{% endif %}</td>
+          <td>{{ h.response_time | round(0) | int if h.response_time else '—' }}{% if h.response_time %} ms{% endif %}</td>
           <td>{{ h.status_code or '—' }}</td>
         </tr>
         {% endfor %}
@@ -57,9 +78,7 @@
     </table>
   </div>
   {% else %}
-  <div class="empty-state small">
-    <p>No checks recorded yet. The first check runs within 3 minutes.</p>
-  </div>
+  <div class="empty-state small"><p>No checks yet. First check runs within 3 minutes.</p></div>
   {% endif %}
 </div>
 {% endblock %}

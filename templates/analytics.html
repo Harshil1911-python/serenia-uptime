@@ -5,7 +5,7 @@
 <div class="page-header">
   <div>
     <h1 class="page-title">Analytics</h1>
-    <p class="page-sub">Uptime overview for all monitored websites</p>
+    <p class="page-sub">Uptime overview — all times in IST (UTC+5:30)</p>
   </div>
 </div>
 
@@ -29,26 +29,29 @@
       <div class="uptime-pct">{{ site.uptime_percentage() }}%</div>
     </div>
 
-    <!-- Sparkline chart rendered by JS -->
     <canvas class="sparkline-chart" id="chart-{{ site.id }}" data-site-id="{{ site.id }}" height="60"></canvas>
 
     <div class="analytics-metrics">
       <div class="ametric">
         <span class="ametric-label">Response</span>
-        <span class="ametric-value">{{ site.response_time | round(0) | int if site.response_time else '—' }} ms</span>
+        <span class="ametric-value">{{ site.response_time | round(0) | int if site.response_time else '—' }}{% if site.response_time %} ms{% endif %}</span>
       </div>
       <div class="ametric">
         <span class="ametric-label">Status Code</span>
         <span class="ametric-value">{{ site.status_code or '—' }}</span>
       </div>
       <div class="ametric">
-        <span class="ametric-label">Last Checked</span>
-        <span class="ametric-value">{{ site.last_checked.strftime('%H:%M %d %b') if site.last_checked else 'Never' }}</span>
+        <span class="ametric-label">Total Views</span>
+        <span class="ametric-value">{{ site.total_views or 0 }}</span>
       </div>
       <div class="ametric">
         <span class="ametric-label">Failures</span>
-        <span class="ametric-value">{{ site.consecutive_failures() }} consecutive</span>
+        <span class="ametric-value">{{ site.consecutive_failures() }} consec.</span>
       </div>
+    </div>
+
+    <div class="site-last-check" style="margin-bottom:0.75rem">
+      🕐 Last: {{ site.last_checked.strftime('%I:%M %p  %d %b %Y IST') if site.last_checked else 'Never' }}
     </div>
 
     <div class="analytics-actions">
@@ -58,7 +61,6 @@
   </div>
   {% endfor %}
 </div>
-
 {% else %}
 <div class="empty-state">
   <div class="empty-icon">📊</div>
@@ -71,76 +73,57 @@
 
 {% block scripts %}
 <script>
-// Render sparkline charts using native Canvas
 document.querySelectorAll('.sparkline-chart').forEach(async canvas => {
   const siteId = canvas.dataset.siteId;
   try {
-    const res  = await fetch(`/api/site/${siteId}/history?limit=30`);
-    const data = await res.json();
+    const res    = await fetch(`/api/site/${siteId}/history?limit=30`);
+    const data   = await res.json();
     if (!data.length) return;
-
-    // Reverse so oldest is left
     const checks = data.reverse();
     const rts    = checks.map(c => c.response_time || 0);
     const max    = Math.max(...rts, 1);
-
-    const dpr = window.devicePixelRatio || 1;
-    const w   = canvas.offsetWidth  || 300;
-    const h   = 60;
+    const dpr    = window.devicePixelRatio || 1;
+    const w      = canvas.offsetWidth || 300;
+    const h      = 60;
     canvas.width  = w * dpr;
     canvas.height = h * dpr;
     canvas.style.width  = w + 'px';
     canvas.style.height = h + 'px';
-
-    const ctx = canvas.getContext('2d');
+    const ctx    = canvas.getContext('2d');
     ctx.scale(dpr, dpr);
-
     const step   = w / (checks.length - 1 || 1);
     const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#8b5cf6';
-
-    // Gradient fill
-    const grad = ctx.createLinearGradient(0, 0, 0, h);
+    const grad   = ctx.createLinearGradient(0, 0, 0, h);
     grad.addColorStop(0, accent + '55');
     grad.addColorStop(1, accent + '00');
-
     ctx.beginPath();
     checks.forEach((c, i) => {
-      const x = i * step;
-      const y = h - (rts[i] / max) * (h - 8) - 4;
+      const x = i * step, y = h - (rts[i] / max) * (h - 8) - 4;
       i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
     });
-    // Fill area
     ctx.lineTo((checks.length - 1) * step, h);
     ctx.lineTo(0, h);
     ctx.closePath();
     ctx.fillStyle = grad;
     ctx.fill();
-
-    // Line
     ctx.beginPath();
     checks.forEach((c, i) => {
-      const x = i * step;
-      const y = h - (rts[i] / max) * (h - 8) - 4;
+      const x = i * step, y = h - (rts[i] / max) * (h - 8) - 4;
       i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
     });
     ctx.strokeStyle = accent;
     ctx.lineWidth   = 2;
     ctx.lineJoin    = 'round';
     ctx.stroke();
-
-    // Dots for offline
     checks.forEach((c, i) => {
       if (c.status === 'offline') {
-        const x = i * step;
-        const y = h - 4;
         ctx.beginPath();
-        ctx.arc(x, y, 3, 0, Math.PI * 2);
+        ctx.arc(i * step, h - 4, 3, 0, Math.PI * 2);
         ctx.fillStyle = '#ef4444';
         ctx.fill();
       }
     });
-
-  } catch (e) { /* silently skip if no history */ }
+  } catch(e) {}
 });
 </script>
 {% endblock %}

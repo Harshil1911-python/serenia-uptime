@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}SMS Alerts — Serenia Uptime{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">SMS Alerts</h1>
+    <p class="page-sub">Get an SMS on your phone when a site goes offline</p>
+  </div>
+</div>
+
+<!-- Twilio status banner -->
+{% if twilio_ok %}
+<div class="info-banner success-banner">
+  <span>✅ Twilio credentials configured — SMS alerts are active</span>
+</div>
+{% else %}
+<div class="info-banner warn-banner">
+  <span>⚠️ Twilio credentials not set. Add <code>TWILIO_ACCOUNT_SID</code>, <code>TWILIO_AUTH_TOKEN</code>, and <code>TWILIO_FROM_NUMBER</code> to your environment variables on Render.</span>
+</div>
+{% endif %}
+
+<div class="form-container">
+  <!-- Add contact form -->
+  <div class="add-form">
+    <h3 style="margin-bottom:1.25rem">Add Alert Contact</h3>
+    <form method="POST" action="{{ url_for('alerts') }}" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <input type="hidden" name="action" value="add" />
+
+      <div class="form-group">
+        <label class="form-label">Mobile Number <span class="required">*</span></label>
+        <input type="tel" name="phone" class="form-input" placeholder="+919876543210" required />
+        <span class="form-hint">Include country code, e.g. +91 for India</span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Label (optional)</label>
+        <input type="text" name="label" class="form-input" placeholder="My phone / Owner / Admin" />
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full">
+        🔔 Add Contact
+      </button>
+    </form>
+  </div>
+
+  <!-- Tips -->
+  <div class="add-tips">
+    <h4>How it works</h4>
+    <ul>
+      <li>When a site goes <strong>offline</strong>, an SMS is sent instantly</li>
+      <li>Only the first failure triggers an alert (no spam)</li>
+      <li>Uses <strong>Twilio</strong> — free trial available at twilio.com</li>
+      <li>Set env vars on Render: <code>TWILIO_ACCOUNT_SID</code>, <code>TWILIO_AUTH_TOKEN</code>, <code>TWILIO_FROM_NUMBER</code></li>
+      <li>Also set <code>GITHUB_REPO</code> as <code>username/repo</code> for the Dev Tracker</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Contacts list -->
+{% if contacts %}
+<div class="table-card" style="margin-top:2rem">
+  <div class="table-header">
+    <h3>Registered Contacts</h3>
+    <span class="table-count">{{ contacts | length }} contact(s)</span>
+  </div>
+  <div class="table-wrap">
+    <table class="history-table">
+      <thead>
+        <tr><th>Phone Number</th><th>Label</th><th>Added</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        {% for c in contacts %}
+        <tr>
+          <td><strong>{{ c.phone }}</strong></td>
+          <td>{{ c.label or '—' }}</td>
+          <td>{{ c.created_at.strftime('%d %b %Y') if c.created_at else '—' }}</td>
+          <td>
+            <form method="POST" action="{{ url_for('alerts') }}" onsubmit="return confirm('Remove this contact?')" style="display:inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+              <input type="hidden" name="action" value="delete" />
+              <input type="hidden" name="contact_id" value="{{ c.id }}" />
+              <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="empty-state" style="margin-top:2rem">
+  <div class="empty-icon">📵</div>
+  <h3>No contacts yet</h3>
+  <p>Add a mobile number above to start receiving offline alerts.</p>
+</div>
+{% endif %}
+{% endblock %}

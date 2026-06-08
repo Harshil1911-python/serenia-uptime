@@ -693,3 +693,129 @@ code { background: var(--surface2); padding: 1px 5px; border-radius: 4px; font-s
   .stats-grid { grid-template-columns: 1fr; }
   .hero-title { font-size: 2rem; }
 }
+
+/* ============================================================
+   NEW FEATURE STYLES — IST / Views / Alerts / Dev Tracker
+   ============================================================ */
+
+/* Site last check line */
+.site-last-check {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  padding: 0.4rem 0;
+  border-top: 1px solid var(--border);
+  margin-bottom: 0.75rem;
+}
+
+/* Detail metrics row on site_detail */
+.detail-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+.dmetric-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.dmetric-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.dmetric-value { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 700; }
+.dmetric-value.small-val { font-size: 0.95rem; margin-top: 4px; }
+
+/* Info banners */
+.info-banner {
+  padding: 0.85rem 1.25rem;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid;
+}
+.success-banner { background: rgba(34,197,94,0.08); border-color: var(--online); color: var(--online); }
+.warn-banner    { background: rgba(251,191,36,0.08); border-color: #f59e0b;     color: #f59e0b; }
+.warn-banner code { background: rgba(251,191,36,0.15); padding: 1px 5px; border-radius: 4px; font-size: 0.8rem; }
+
+/* ---- Dev Tracker commits ---- */
+.commits-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.commit-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.commit-card:last-child { border-bottom: none; }
+.commit-card:hover { background: var(--surface2); }
+
+.commit-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-right: 1rem;
+  flex-shrink: 0;
+}
+.commit-sha {
+  font-family: 'Courier New', monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-glow);
+  padding: 2px 6px;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+.commit-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--surface);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+  flex-shrink: 0;
+}
+
+.commit-body { flex: 1; min-width: 0; }
+.commit-message {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 0.35rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.commit-meta {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+.commit-author,
+.commit-time {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* ---- SMS Alerts page tweaks ---- */
+.alerts-form-wrap { max-width: 520px; }
+
+@media (max-width: 768px) {
+  .detail-metrics { grid-template-columns: 1fr 1fr; }
+  .commit-message { white-space: normal; }
+}
