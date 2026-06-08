@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Serenia Uptime{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-sub">Monitor your websites in real-time</p>
+  </div>
+  <a href="{{ url_for('add_website') }}" class="btn btn-primary">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Add Website
+  </a>
+</div>
+
+<!-- Stats cards -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon total">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-label">Total Monitored</span>
+      <span class="stat-value">{{ total }}</span>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon online">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-label">Online</span>
+      <span class="stat-value online-text">{{ online }}</span>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon offline">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-label">Offline</span>
+      <span class="stat-value offline-text">{{ offline }}</span>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon response">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-label">Avg Response</span>
+      <span class="stat-value">{{ avg_rt }} ms</span>
+    </div>
+  </div>
+</div>
+
+<!-- Search & Filter bar -->
+<div class="toolbar">
+  <form class="search-form" method="GET" action="{{ url_for('dashboard') }}">
+    <div class="search-input-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" name="q" placeholder="Search websites..." value="{{ query }}" class="search-input" />
+    </div>
+    <select name="status" class="filter-select">
+      <option value="">All Status</option>
+      <option value="online" {% if status_filter == 'online' %}selected{% endif %}>Online</option>
+      <option value="offline" {% if status_filter == 'offline' %}selected{% endif %}>Offline</option>
+      <option value="unknown" {% if status_filter == 'unknown' %}selected{% endif %}>Unknown</option>
+    </select>
+    <button type="submit" class="btn btn-secondary">Filter</button>
+    {% if query or status_filter %}
+      <a href="{{ url_for('dashboard') }}" class="btn btn-ghost">Clear</a>
+    {% endif %}
+  </form>
+  <span class="last-activity">Last checked: <strong>{{ last_checked_str }}</strong></span>
+</div>
+
+<!-- Sites list -->
+{% if sites %}
+<div class="sites-grid" id="sitesGrid">
+  {% for site in sites %}
+  <div class="site-card" data-status="{{ site.current_status }}">
+    <div class="site-card-header">
+      <div class="site-info">
+        <span class="status-dot {{ site.current_status }}"></span>
+        <div>
+          <h3 class="site-name">{{ site.website_name }}</h3>
+          <a href="{{ site.url }}" target="_blank" rel="noopener" class="site-url">{{ site.url }}</a>
+        </div>
+      </div>
+      <span class="status-badge {{ site.current_status }}">
+        {{ site.current_status | upper }}
+      </span>
+    </div>
+
+    <div class="site-metrics">
+      <div class="metric">
+        <span class="metric-label">Response</span>
+        <span class="metric-value">{{ site.response_time | round(0) | int if site.response_time else '—' }} ms</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Status Code</span>
+        <span class="metric-value">{{ site.status_code or '—' }}</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Uptime</span>
+        <span class="metric-value">{{ site.uptime_percentage() }}%</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Last Check</span>
+        <span class="metric-value small">
+          {{ site.last_checked.strftime('%H:%M %d %b') if site.last_checked else 'Never' }}
+        </span>
+      </div>
+    </div>
+
+    <div class="site-card-actions">
+      <a href="{{ url_for('site_detail', site_id=site.id) }}" class="btn btn-sm btn-secondary">View History</a>
+      <button class="btn btn-sm btn-ghost" onclick="manualCheck({{ site.id }}, this)">Check Now</button>
+      <form method="POST" action="{{ url_for('delete_website', site_id=site.id) }}" onsubmit="return confirm('Remove {{ site.website_name }}?')">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="empty-icon">🌐</div>
+  <h3>No websites monitored yet</h3>
+  <p>Add your first URL to start monitoring uptime and preventing cold starts.</p>
+  <a href="{{ url_for('add_website') }}" class="btn btn-primary">Add Your First Website</a>
+</div>
+{% endif %}
+{% endblock %}

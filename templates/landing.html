@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+{% block title %}Serenia Uptime — Reliable Monitoring. Continuous Availability.{% endblock %}
+
+{% block content %}
+<div class="landing-page">
+
+  <!-- NAV -->
+  <nav class="landing-nav">
+    <div class="nav-brand">
+      <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+        <circle cx="14" cy="14" r="13" stroke="var(--accent)" stroke-width="1.5"/>
+        <path d="M7 14 Q10 8 14 14 Q18 20 21 14" stroke="var(--accent)" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <circle cx="14" cy="14" r="2.5" fill="var(--accent)"/>
+      </svg>
+      Serenia Uptime
+    </div>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-primary nav-cta">Open Dashboard →</a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      Monitoring 24/7 — No Downtime
+    </div>
+    <h1 class="hero-title">
+      Keep Your Websites<br>
+      <span class="gradient-text">Alive &amp; Visible</span>
+    </h1>
+    <p class="hero-sub">
+      Serenia Uptime automatically pings your URLs every 3 minutes,
+      prevents cold starts on serverless platforms, and gives you
+      real-time uptime visibility — all from one clean dashboard.
+    </p>
+    <div class="hero-actions">
+      <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">Start Monitoring Free</a>
+      <a href="#how-it-works" class="btn btn-ghost btn-lg">See How It Works</a>
+    </div>
+    <div class="hero-visual">
+      <div class="monitor-card floating">
+        <div class="mc-header">
+          <span class="mc-dot online"></span>
+          <span class="mc-label">api.mysite.com</span>
+          <span class="mc-badge online-badge">ONLINE</span>
+        </div>
+        <div class="mc-bar-row">
+          <div class="mc-bars">
+            <div class="bar" style="height:60%"></div>
+            <div class="bar" style="height:80%"></div>
+            <div class="bar" style="height:50%"></div>
+            <div class="bar" style="height:90%"></div>
+            <div class="bar" style="height:70%"></div>
+            <div class="bar" style="height:85%"></div>
+            <div class="bar" style="height:65%"></div>
+            <div class="bar active" style="height:75%"></div>
+          </div>
+          <div class="mc-stat">
+            <span class="mc-ms">142 ms</span>
+            <span class="mc-pct">99.9% uptime</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS STRIP -->
+  <div class="stats-strip">
+    <div class="stat-item"><strong>3 min</strong><span>Check interval</span></div>
+    <div class="stat-divider"></div>
+    <div class="stat-item"><strong>99.9%</strong><span>Platform uptime</span></div>
+    <div class="stat-divider"></div>
+    <div class="stat-item"><strong>Real-time</strong><span>Status badges</span></div>
+    <div class="stat-divider"></div>
+    <div class="stat-item"><strong>CSV</strong><span>History export</span></div>
+  </div>
+
+  <!-- FEATURES -->
+  <section class="section" id="features">
+    <div class="section-label">FEATURES</div>
+    <h2 class="section-title">Everything you need to monitor with confidence</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Auto-Pinging</h3>
+        <p>Every 3 minutes, Serenia sends a GET request to your URLs preventing serverless cold-starts and sleep cycles.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Response Analytics</h3>
+        <p>Track response times, HTTP status codes, and uptime percentages with beautiful charts and history logs.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔴</div>
+        <h3>Status Badges</h3>
+        <p>Instant visual indicators — green for online, red for offline — so you always know what's up.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🌙</div>
+        <h3>Dark &amp; Light Mode</h3>
+        <p>A polished UI that adapts to your preference, optimised for long monitoring sessions.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📁</div>
+        <h3>CSV Export</h3>
+        <p>Download your full monitoring history as a CSV for audits, reports, or offline analysis.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3>Secure by Design</h3>
+        <p>CSRF protection, URL validation, and duplicate prevention ensure your data stays clean and safe.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section alt-section" id="how-it-works">
+    <div class="section-label">HOW IT WORKS</div>
+    <h2 class="section-title">Up and running in 30 seconds</h2>
+    <div class="steps-row">
+      <div class="step">
+        <div class="step-num">01</div>
+        <h3>Add your URL</h3>
+        <p>Paste any public URL — Render apps, Vercel functions, APIs, or any website you want to keep alive.</p>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <h3>We start monitoring</h3>
+        <p>Serenia immediately pings your URL and then checks every 3 minutes automatically — no configuration needed.</p>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <h3>View your dashboard</h3>
+        <p>See uptime stats, response times, status history, and export CSV reports from your clean dashboard.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="section" id="pricing">
+    <div class="section-label">PRICING</div>
+    <h2 class="section-title">Simple, transparent pricing</h2>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="plan-name">Starter</div>
+        <div class="plan-price">Free <span>forever</span></div>
+        <ul class="plan-features">
+          <li>✓ Up to 5 websites</li>
+          <li>✓ 3-minute check interval</li>
+          <li>✓ 30-day history</li>
+          <li>✓ CSV export</li>
+          <li>✓ Status badges</li>
+        </ul>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline">Get Started</a>
+      </div>
+      <div class="pricing-card featured">
+        <div class="plan-badge">POPULAR</div>
+        <div class="plan-name">Pro</div>
+        <div class="plan-price">$9 <span>/month</span></div>
+        <ul class="plan-features">
+          <li>✓ Unlimited websites</li>
+          <li>✓ 1-minute check interval</li>
+          <li>✓ 1-year history</li>
+          <li>✓ Slack &amp; email alerts</li>
+          <li>✓ API access</li>
+          <li>✓ Priority support</li>
+        </ul>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-primary">Start Free Trial</a>
+      </div>
+      <div class="pricing-card">
+        <div class="plan-name">Enterprise</div>
+        <div class="plan-price">Custom</div>
+        <ul class="plan-features">
+          <li>✓ Everything in Pro</li>
+          <li>✓ SLA guarantee</li>
+          <li>✓ Dedicated support</li>
+          <li>✓ Custom integrations</li>
+          <li>✓ SSO / SAML</li>
+        </ul>
+        <a href="#contact" class="btn btn-outline">Contact Us</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section alt-section" id="faq">
+    <div class="section-label">FAQ</div>
+    <h2 class="section-title">Common questions</h2>
+    <div class="faq-list">
+      <details class="faq-item">
+        <summary>Does Serenia prevent Render / Railway apps from sleeping?</summary>
+        <p>Yes. By pinging your app URL every 3 minutes, Serenia keeps the server warm and prevents free-tier sleep that many hosting platforms enforce after periods of inactivity.</p>
+      </details>
+      <details class="faq-item">
+        <summary>What counts as "Online"?</summary>
+        <p>Any HTTP response with a status code between 200 and 399 is considered online. Timeouts or connection failures mark the site as offline.</p>
+      </details>
+      <details class="faq-item">
+        <summary>How do I export my history?</summary>
+        <p>Click on any monitored website to open the detail view, then hit the "Export CSV" button. You'll receive a downloadable spreadsheet with every check timestamp, status, and response time.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Is my data private?</summary>
+        <p>Absolutely. URLs and monitoring data are stored only in your own database instance. Serenia does not share data with third parties.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Can I monitor APIs, not just websites?</summary>
+        <p>Yes — any publicly accessible HTTP/HTTPS endpoint works, including REST APIs, health-check routes, and webhooks.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="section" id="contact">
+    <div class="section-label">CONTACT</div>
+    <h2 class="section-title">Get in touch</h2>
+    <p class="contact-sub">Questions, feedback, or enterprise inquiries? We'd love to hear from you.</p>
+    <a href="mailto:hello@serenia.dev" class="btn btn-primary btn-lg">hello@serenia.dev</a>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="landing-footer">
+    <div class="footer-brand">
+      <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
+        <circle cx="14" cy="14" r="13" stroke="var(--accent)" stroke-width="1.5"/>
+        <path d="M7 14 Q10 8 14 14 Q18 20 21 14" stroke="var(--accent)" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <circle cx="14" cy="14" r="2.5" fill="var(--accent)"/>
+      </svg>
+      Serenia Uptime
+    </div>
+    <p class="footer-tagline">Reliable Monitoring. Continuous Availability.</p>
+    <div class="footer-links">
+      <a href="{{ url_for('dashboard') }}">Dashboard</a>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <p class="footer-copy">© 2025 Serenia Uptime. Built with Flask &amp; ❤</p>
+  </footer>
+
+</div>
+{% endblock %}

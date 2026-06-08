@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ site.website_name }} — Serenia Uptime{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ site.website_name }}</h1>
+    <a href="{{ site.url }}" target="_blank" rel="noopener" class="site-url">{{ site.url }}</a>
+  </div>
+  <div class="header-actions">
+    <a href="{{ url_for('export_csv', site_id=site.id) }}" class="btn btn-secondary">Export CSV</a>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-ghost">← Dashboard</a>
+  </div>
+</div>
+
+<!-- Current status banner -->
+<div class="status-banner {{ site.current_status }}">
+  <div class="sb-left">
+    <span class="sb-dot"></span>
+    <span class="sb-status">{{ site.current_status | upper }}</span>
+    <span class="sb-code">{{ '— HTTP ' + site.status_code|string if site.status_code else '' }}</span>
+  </div>
+  <div class="sb-right">
+    <span>{{ site.response_time | round(0) | int if site.response_time else '—' }} ms</span>
+    <span>{{ site.uptime_percentage() }}% uptime</span>
+    <span>Last: {{ site.last_checked.strftime('%H:%M %d %b %Y') if site.last_checked else 'Never' }}</span>
+  </div>
+</div>
+
+<!-- History table -->
+<div class="table-card">
+  <div class="table-header">
+    <h3>Check History</h3>
+    <span class="table-count">{{ history | length }} records</span>
+  </div>
+  {% if history %}
+  <div class="table-wrap">
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Status</th>
+          <th>Response Time</th>
+          <th>Status Code</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for h in history %}
+        <tr class="row-{{ h.status }}">
+          <td>{{ h.timestamp.strftime('%H:%M:%S  %d %b %Y') if h.timestamp else '—' }}</td>
+          <td><span class="status-badge {{ h.status }}">{{ h.status | upper }}</span></td>
+          <td>{{ h.response_time | round(0) | int if h.response_time else '—' }} {% if h.response_time %}ms{% endif %}</td>
+          <td>{{ h.status_code or '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state small">
+    <p>No checks recorded yet. The first check runs within 3 minutes.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
