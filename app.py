@@ -8,7 +8,7 @@ import io
 import logging
 import os
 import re
-from datetime import datetime, timedelta
+from datetime import datetime
 from urllib.parse import urlparse
 
 from dotenv import load_dotenv
@@ -26,6 +26,14 @@ from flask_wtf.csrf import CSRFProtect
 
 load_dotenv()
 
+# Configure logging early so startup errors are visible in Render logs
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+logger = logging.getLogger(__name__)
+
+
 # ---------------------------------------------------------------------------
 # App factory
 # ---------------------------------------------------------------------------
@@ -37,10 +45,24 @@ def create_app() -> Flask:
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "serenia-dev-secret-change-in-prod")
     app.config["WTF_CSRF_ENABLED"] = True
 
-    database_url = os.environ.get("DATABASE_URL", "sqlite:///instance/serenia.db")
+    # ---- Database URL ----
+    database_url = os.environ.get("DATABASE_URL", "")
+
     # Render provides postgres:// URIs; SQLAlchemy needs postgresql://
     if database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+    # No DATABASE_URL set → fall back to SQLite
+    if not database_url:
+        if os.environ.get("RENDER"):
+            # /tmp is always writable on Render
+            db_path = "/tmp/serenia.db"
+        else:
+            os.makedirs("instance", exist_ok=True)
+            db_path = os.path.join(os.path.abspath("instance"), "serenia.db")
+        database_url = f"sqlite:///{db_path}"
+
+    logger.info("Database: %s", database_url.split("@")[-1])
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -52,8 +74,8 @@ def create_app() -> Flask:
 
     # ---- Database init ----
     with app.app_context():
-        os.makedirs("instance", exist_ok=True)
         db.create_all()
+        logger.info("Database tables ready")
 
     # ---- Monitoring scheduler ----
     from monitoring.monitor import start_scheduler
@@ -68,15 +90,6 @@ def create_app() -> Flask:
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-URL_REGEX = re.compile(
-    r"^(https?://)?"                      # optional scheme
-    r"(([a-zA-Z0-9\-]+\.)+[a-zA-Z]{2,})" # domain
-    r"(:[0-9]{1,5})?"                     # optional port
-    r"(/[^\s]*)?$",                       # optional path
-    re.IGNORECASE,
-)
-
 
 def normalise_url(raw: str) -> str:
     """Ensure URL has a scheme; raise ValueError if invalid."""
@@ -133,9 +146,7 @@ def register_routes(app: Flask, csrf: CSRFProtect):
             if any(s.response_time for s in sites) else 0
         )
 
-        last_activity = (
-            Website.query.order_by(Website.last_checked.desc()).first()
-        )
+        last_activity = Website.query.order_by(Website.last_checked.desc()).first()
         last_checked_str = (
             last_activity.last_checked.strftime("%H:%M:%S %d %b %Y")
             if last_activity and last_activity.last_checked else "Never"
@@ -163,7 +174,6 @@ def register_routes(app: Flask, csrf: CSRFProtect):
             name = request.form.get("website_name", "").strip()
             url  = request.form.get("url", "").strip()
 
-            # Validation
             if not name:
                 flash("Website name is required.", "error")
                 return redirect(url_for("add_website"))
@@ -188,7 +198,7 @@ def register_routes(app: Flask, csrf: CSRFProtect):
             # Immediate first check
             try:
                 check_website(app, site.id)
-            except Exception:  # noqa: BLE001
+            except Exception:
                 pass
 
             flash(f'"{name}" has been added and is now being monitored.', "success")
@@ -235,7 +245,7 @@ def register_routes(app: Flask, csrf: CSRFProtect):
         return render_template("site_detail.html", site=site, history=history)
 
     # ------------------------------------------------------------------ #
-    #  API endpoints (consumed by JS)                                     #
+    #  API endpoints                                                       #
     # ------------------------------------------------------------------ #
 
     @app.route("/api/sites")
@@ -257,13 +267,12 @@ def register_routes(app: Flask, csrf: CSRFProtect):
 
     @app.route("/api/site/<int:site_id>/check", methods=["POST"])
     def api_manual_check(site_id):
-        """Trigger an immediate check for a single website."""
         site = Website.query.get_or_404(site_id)
         try:
             check_website(app, site.id)
             db.session.refresh(site)
             return jsonify({"success": True, "site": site.to_dict()})
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             return jsonify({"success": False, "error": str(exc)}), 500
 
     @app.route("/api/stats")
@@ -280,15 +289,13 @@ def register_routes(app: Flask, csrf: CSRFProtect):
             )
             if any(s.response_time for s in sites) else 0
         )
-        return jsonify(
-            {
-                "total": total,
-                "online": online,
-                "offline": offline,
-                "unknown": total - online - offline,
-                "avg_response_time": avg_rt,
-            }
-        )
+        return jsonify({
+            "total": total,
+            "online": online,
+            "offline": offline,
+            "unknown": total - online - offline,
+            "avg_response_time": avg_rt,
+        })
 
     # ------------------------------------------------------------------ #
     #  Export CSV                                                          #
@@ -303,7 +310,6 @@ def register_routes(app: Flask, csrf: CSRFProtect):
             .order_by(CheckHistory.timestamp.desc())
             .all()
         )
-
         output = io.StringIO()
         writer = csv.writer(output)
         writer.writerow(["Timestamp", "Status", "Response Time (ms)", "Status Code"])
@@ -314,7 +320,6 @@ def register_routes(app: Flask, csrf: CSRFProtect):
                 h.response_time or "",
                 h.status_code or "",
             ])
-
         output.seek(0)
         filename = f"{site.website_name.replace(' ', '_')}_history.csv"
         return Response(
@@ -343,6 +348,5 @@ def register_routes(app: Flask, csrf: CSRFProtect):
 app = create_app()
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=os.environ.get("FLASK_DEBUG", "false").lower() == "true")
